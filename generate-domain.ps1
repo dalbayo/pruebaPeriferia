@@ -1,8 +1,8 @@
 # ============================================
 # CONFIGURACIÓN BASE
 # ============================================
-$basePackage = "co.gtcloud.riopaila"
-$basePath = "src/main/java/co/gtcloud/riopaila"
+$basePackage = "com.periferia.prueba"
+$basePath = "src/main/java/com/periferia/prueba"
 
 $modelPath = "$basePath/model"
 $repoPath = "$basePath/repository"
@@ -13,34 +13,34 @@ $implPath = "$basePath/service/impl"
 # LISTA DE TABLAS
 # ============================================
 $tables = @(
-"pais",
-"empleado",
-"departamento",
-"cargo",
-"ciudad",
-"area_trabajo",
-"usuario_perfil",
-"dispositivo",
-"usuario",
-"perfil",
-"turno_real",
-"jornada_laboral",
-"marcacion_inconsistencia",
-"marcacion",
-"historial_sincronizacion_sap",
-"auditoria_eventos",
-"historial_cambios_turno",
-"alerta_operativa_empleado",
-"alerta_operativa",
-"empleado_supervisor",
-"carga_sap",
-"estado_carga_sap",
-"estado_marcacion",
-"log_sistema",
-"turno_programado",
-"sincronizacion_apps",
-"parametro_sistema",
-"tipo_carga_sap"
+    "pais",
+    "empleado",
+    "departamento",
+    "cargo",
+    "ciudad",
+    "area_trabajo",
+    "usuario_perfil",
+    "dispositivo",
+    "usuario",
+    "perfil",
+    "turno_real",
+    "jornada_laboral",
+    "marcacion_inconsistencia",
+    "marcacion",
+    "historial_sincronizacion_sap",
+    "auditoria_eventos",
+    "historial_cambios_turno",
+    "alerta_operativa_empleado",
+    "alerta_operativa",
+    "empleado_supervisor",
+    "carga_sap",
+    "estado_carga_sap",
+    "estado_marcacion",
+    "log_sistema",
+    "turno_programado",
+    "sincronizacion_apps",
+    "parametro_sistema",
+    "tipo_carga_sap"
 )
 
 # ============================================
@@ -71,7 +71,7 @@ function To-PascalCase($text) {
 
     foreach ($part in $parts) {
         if ($part.Length -gt 0) {
-            $result += $part.Substring(0,1).ToUpper() + $part.Substring(1).ToLower()
+            $result += $part.Substring(0, 1).ToUpper() + $part.Substring(1).ToLower()
         }
     }
 
@@ -86,10 +86,10 @@ foreach ($table in $tables) {
     $className = To-PascalCase $table
     Write-Host "Generando: $className"
 
-# ============================
-# MODEL (ENTITY JPA)
-# ============================
-$modelContent = @"
+    # ============================
+    # MODEL (ENTITY JPA)
+    # ============================
+    $modelContent = @"
 package $basePackage.model;
 
 import jakarta.persistence.*;
@@ -120,10 +120,10 @@ public class $className implements Serializable {
 
     $modelContent | Out-File "$modelPath/$className.java" -Encoding utf8
 
-# ============================
-# REPOSITORY
-# ============================
-$repoContent = @"
+    # ============================
+    # REPOSITORY
+    # ============================
+    $repoContent = @"
 package $basePackage.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -137,10 +137,10 @@ public interface ${className}Repository extends JpaRepository<$className, Long> 
 
     $repoContent | Out-File "$repoPath/${className}Repository.java" -Encoding utf8
 
-# ============================
-# SERVICE INTERFACE
-# ============================
-$serviceContent = @"
+    # ============================
+    # SERVICE INTERFACE
+    # ============================
+    $serviceContent = @"
 package $basePackage.service;
 
 import java.util.List;
@@ -157,10 +157,10 @@ public interface ${className}Service {
 
     $serviceContent | Out-File "$servicePath/${className}Service.java" -Encoding utf8
 
-# ============================
-# SERVICE IMPLEMENTATION
-# ============================
-$implContent = @"
+    # ============================
+    # SERVICE IMPLEMENTATION
+    # ============================
+    $implContent = @"
 package $basePackage.service.impl;
 
 import lombok.RequiredArgsConstructor;

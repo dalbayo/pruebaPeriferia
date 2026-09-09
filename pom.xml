@@ -9,11 +9,11 @@
 		<version>3.4.2</version> <relativePath/> 
 	</parent>
 
-	<groupId>co.gtcloud.riopaila</groupId>
-	<artifactId>riopaila-backend</artifactId>
+	<groupId>com.periferia.prueba</groupId>
+	<artifactId>periferia-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging> <name>rioPaila</name>
-	<description>Sistema de Exportación SSH y Backend - GTCloud Riopaila</description>
+	<packaging>jar</packaging> <name>periferia</name>
+	<description>Sistema de Exportación SSH y Backend - Periferia IT Group</description>
 
 	<properties>
 		<java.version>17</java.version>
