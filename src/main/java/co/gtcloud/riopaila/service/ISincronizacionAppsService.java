@@ -1,0 +1,12 @@
+package co.gtcloud.riopaila.service;
+
+import co.gtcloud.riopaila.model.SincronizacionApps;
+import java.util.List;
+import java.util.Optional;
+
+public interface ISincronizacionAppsService {
+    List<SincronizacionApps> findAll();
+    Optional<SincronizacionApps> findById(Long id);
+    SincronizacionApps save(SincronizacionApps entity);
+    void deleteById(Long id);
+}
