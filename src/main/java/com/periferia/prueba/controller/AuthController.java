@@ -15,13 +15,17 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -75,6 +79,30 @@ public class AuthController {
                 refreshTokenExpiry);
 
         return ResponseEntity.ok(new TokenResponseDto(accessToken, refreshToken));
+    }
+
+    /**
+     * GET protegido por JWT: valida el Access Token (vía JwtAuthFilter) y
+     * devuelve el usuario autenticado. Requisito "Endpoint GET/POST de login":
+     * POST /login autentica y emite tokens; este GET confirma que el token
+     * sigue siendo válido y quién es el usuario dueño.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> me(@AuthenticationPrincipal UserDetailsImpl currentUser) {
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Usuario usuario = currentUser.getUsuario();
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("id", usuario.getId());
+        body.put("username", usuario.getUsername());
+        body.put("activo", usuario.getActivo());
+        body.put("tipoDocumento", usuario.getTipoDocumento());
+        body.put("numeroDocumento", usuario.getNumeroDocumento());
+
+        return ResponseEntity.ok(body);
     }
 
     /**
