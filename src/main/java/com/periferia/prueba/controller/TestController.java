@@ -20,7 +20,7 @@ public class TestController {
     public Map<String, String> getStatus() {
         Map<String, String> response = new HashMap<>();
         response.put("estado", "OK");
-        response.put("mensaje", "Backend de Riopaila conectado exitosamente");
+        response.put("mensaje", "Backend de prueba Periferia conectado exitosamente");
         return response;
     }
 }
