@@ -2,11 +2,20 @@ package com.periferia.prueba.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Check;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuario",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uq_usuario_documento", columnNames = { "tipo_documento", "numero_documento" })
+    },
+    indexes = {
+        @Index(name = "idx_usuario_documento", columnList = "tipo_documento, numero_documento")
+    }
+)
+@Check(name = "chk_usuario_eliminado", constraints = "eliminado in (0, 1)")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,7 +23,7 @@ import java.time.LocalDateTime;
 public class Usuario implements Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -1721896203132664972L;
 
@@ -25,23 +34,30 @@ public class Usuario implements Serializable {
     @Column(nullable = false, unique = true, length = 255)
     private String username;
 
+    @Column(name = "tipo_documento", length = 10)
+    private String tipoDocumento;
+
+    @Column(name = "numero_documento", length = 20)
+    private String numeroDocumento;
+
     @Column(name = "empleado_id")
     private Long empleadoId;
 
     @Builder.Default
-    @Column(columnDefinition = "boolean DEFAULT true")
+    @Column(nullable = false, columnDefinition = "boolean DEFAULT true")
     private Boolean activo = true;
 
+    @Column(length = 255)
     private String token;
 
+    @Column(length = 255)
     private String password;
 
     // Ajustado a LocalDateTime para coincidir con 'timestamp without time zone'
     @Column(name = "expirydate")
     private LocalDateTime expiryDate;
 
-    // RelaciÃ³n opcional si deseas navegar al empleado desde el usuario
-    @OneToOne
-    @JoinColumn(name = "empleado_id", insertable = false, updatable = false)
-    private Empleado empleado;
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "smallint DEFAULT 1")
+    private Short eliminado = 1;
 }
