@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuario", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_usuario_documento", columnNames = { "tipo_documento", "numero_documento" })
+                @UniqueConstraint(name = "uq_usuario_documento", columnNames = { "tipo_documento", "numero_documento" })
 }, indexes = {
-        @Index(name = "idx_usuario_documento", columnList = "tipo_documento, numero_documento")
+                @Index(name = "idx_usuario_documento", columnList = "tipo_documento, numero_documento")
 })
 @Check(name = "chk_usuario_eliminado", constraints = "eliminado in (0, 1)")
 @Data
@@ -19,48 +19,45 @@ import java.time.LocalDateTime;
 @Builder
 public class Usuario implements Serializable {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -1721896203132664972L;
+        /**
+         *
+         */
+        private static final long serialVersionUID = -1721896203132664972L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String username;
+        @Column(nullable = false, unique = true, length = 255)
+        private String username;
 
-    @Column(name = "tipo_documento", length = 10)
-    private String tipoDocumento;
+        @Column(name = "tipo_documento", length = 10)
+        private String tipoDocumento;
 
-    @Column(name = "numero_documento", length = 20)
-    private String numeroDocumento;
+        @Column(name = "numero_documento", length = 20)
+        private String numeroDocumento;
 
-    @Column(name = "empleado_id")
-    private Long empleadoId;
+        @Builder.Default
+        @Column(nullable = false, columnDefinition = "boolean DEFAULT true")
+        private Boolean activo = true;
 
-    @Builder.Default
-    @Column(nullable = false, columnDefinition = "boolean DEFAULT true")
-    private Boolean activo = true;
+        @Column(length = 255)
+        private String token;
 
-    @Column(length = 255)
-    private String token;
+        @Column(length = 255)
+        private String password;
 
-    @Column(length = 255)
-    private String password;
+        // Ajustado a LocalDateTime para coincidir con 'timestamp without time zone'
+        @Column(name = "expirydate")
+        private LocalDateTime expiryDate;
 
-    // Ajustado a LocalDateTime para coincidir con 'timestamp without time zone'
-    @Column(name = "expirydate")
-    private LocalDateTime expiryDate;
+        @Builder.Default
+        @Column(nullable = false, columnDefinition = "smallint DEFAULT 1")
+        private Short eliminado = 1;
 
-    @Builder.Default
-    @Column(nullable = false, columnDefinition = "smallint DEFAULT 1")
-    private Short eliminado = 1;
+        @Column(name = "refresh_token", length = 255, unique = true)
+        private String refreshToken;
 
-    @Column(name = "refresh_token", length = 255, unique = true)
-    private String refreshToken;
-
-    @Column(name = "refresh_token_expiry")
-    private LocalDateTime refreshTokenExpiry;
+        @Column(name = "refresh_token_expiry")
+        private LocalDateTime refreshTokenExpiry;
 }
