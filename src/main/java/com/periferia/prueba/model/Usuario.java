@@ -7,14 +7,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "usuario",
-    uniqueConstraints = {
+@Table(name = "usuario", uniqueConstraints = {
         @UniqueConstraint(name = "uq_usuario_documento", columnNames = { "tipo_documento", "numero_documento" })
-    },
-    indexes = {
+}, indexes = {
         @Index(name = "idx_usuario_documento", columnList = "tipo_documento, numero_documento")
-    }
-)
+})
 @Check(name = "chk_usuario_eliminado", constraints = "eliminado in (0, 1)")
 @Data
 @NoArgsConstructor
@@ -60,4 +57,10 @@ public class Usuario implements Serializable {
     @Builder.Default
     @Column(nullable = false, columnDefinition = "smallint DEFAULT 1")
     private Short eliminado = 1;
+
+    @Column(name = "refresh_token", length = 255, unique = true)
+    private String refreshToken;
+
+    @Column(name = "refresh_token_expiry")
+    private LocalDateTime refreshTokenExpiry;
 }

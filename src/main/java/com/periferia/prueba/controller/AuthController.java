@@ -4,25 +4,24 @@ import org.springframework.web.bind.annotation.*;
 
 import com.periferia.prueba.dto.LoginRequestDto;
 import com.periferia.prueba.dto.TokenResponseDto;
+import com.periferia.prueba.model.Usuario;
 import com.periferia.prueba.repository.UsuarioRepository;
 import com.periferia.prueba.security.jwt.JwtService;
 import com.periferia.prueba.security.jwt.UserDetailsImpl;
 import com.periferia.prueba.service.IUsuarioService;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -60,16 +59,104 @@ public class AuthController {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken();
 
-        // IMPORTANTE: AquÃ­ debes persistir el refreshToken en SQL Server asociado al
-        // usuario
-        // refreshTokenService.save(user.getId(), refreshToken);
+        LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(10);
+
+        LocalDateTime refreshTokenExpiry = LocalDateTime.now().plusDays(7);
+        Usuario usuario = usuarioService
+                .findByUsername(request.username())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // 7. Guardar tokens
+        usuarioService.actualizarTokens(
+                usuario.getId(),
+                accessToken,
+                expiryDate,
+                refreshToken,
+                refreshTokenExpiry);
 
         return ResponseEntity.ok(new TokenResponseDto(accessToken, refreshToken));
     }
 
-    // 2. REFRESH: Genera un nuevo Access Token (Cada 10 min)
+    /**
+     * REFRESH TOKEN
+     *
+     * Recibe un Refresh Token y genera:
+     * - nuevo Access Token
+     * - nuevo Refresh Token
+     */
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponseDto> refresh(@RequestBody Map<String, String> request) {
+    public ResponseEntity<TokenResponseDto> refresh(
+            @RequestBody Map<String, String> request) {
+
+        String refreshToken = request.get("refreshToken");
+
+        // Validación básica
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new RuntimeException(
+                    "El refreshToken es obligatorio");
+        }
+
+        // 1. Buscar usuario por REFRESH TOKEN
+        Usuario usuario = usuarioService
+                .findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException(
+                        "Refresh token inválido"));
+
+        // 2. Validar usuario
+        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+            throw new RuntimeException(
+                    "El usuario está inactivo");
+        }
+
+        // 3. Validar eliminación lógica
+        if (usuario.getEliminado() == null ||
+                usuario.getEliminado() != 1) {
+
+            throw new RuntimeException(
+                    "El usuario no está disponible");
+        }
+
+        // 4. Validar expiración del Refresh Token
+        if (usuario.getRefreshTokenExpiry() == null ||
+                usuario.getRefreshTokenExpiry()
+                        .isBefore(LocalDateTime.now())) {
+
+            throw new RuntimeException(
+                    "El refresh token ha expirado");
+        }
+
+        // 5. Obtener UserDetails
+        UserDetails userDetails = new UserDetailsImpl(usuario);
+
+        // 6. Generar NUEVO Access Token
+        String newAccessToken = jwtService.generateAccessToken(userDetails);
+
+        // 7. Generar NUEVO Refresh Token
+        String newRefreshToken = jwtService.generateRefreshToken();
+
+        // 8. Nuevas fechas de expiración
+        LocalDateTime newExpiryDate = LocalDateTime.now().plusMinutes(10);
+
+        LocalDateTime newRefreshTokenExpiry = LocalDateTime.now().plusDays(7);
+
+        // 9. Actualizar ambos tokens
+        usuarioService.actualizarTokens(
+                usuario.getId(),
+                newAccessToken,
+                newExpiryDate,
+                newRefreshToken,
+                newRefreshTokenExpiry);
+
+        // 10. Retornar nuevos tokens
+        return ResponseEntity.ok(
+                new TokenResponseDto(
+                        newAccessToken,
+                        newRefreshToken));
+    }
+
+    // 2. REFRESH: Genera un nuevo Access Token (Cada 10 min)
+    @PostMapping("/refresh2")
+    public ResponseEntity<TokenResponseDto> refresh2(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
 
         // Usamos .map directamente sobre el Optional, sin .get()
